@@ -26,7 +26,7 @@ ui <- fluidPage(
                                           "la_laguna"))
         )
     ),
-    HTML("<a href=\"https://github.com/jueves\">Código del proyecto</a></li>
+    HTML("<a href=\"https://github.com/jueves/covid_compara\">Código del proyecto</a></li>
           <br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Origen de los datos</a>"),
 )
 
