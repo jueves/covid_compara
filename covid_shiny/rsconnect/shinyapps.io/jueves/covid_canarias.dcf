@@ -1,0 +1,12 @@
+name: covid_canarias
+title: covid_canarias
+username:
+account: jueves
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3602401
+bundleId: 4197154
+url: https://jueves.shinyapps.io/covid_canarias/
+when: 1612808821.43041
+asMultiple: FALSE
+asStatic: FALSE
