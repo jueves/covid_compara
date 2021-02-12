@@ -34,7 +34,7 @@ server <- function(input, output) {
     base_url <- "https://docs.google.com/spreadsheets/d/1aXRIP2MnSBIIi5-kPnmawnCAXJZNiNuJy0WD4Zb0HvM/gviz/tq?tqx=out:csv&sheet="
     data_lp <- read.csv(paste0(base_url, "la_palma"))
     data_lgn <- read.csv(paste0(base_url, "la_laguna"))
-    metadata <- fromJSON("http://varios.martes.fastmail.fm/covid_canarias_metadata.json")
+    metadata <- fromJSON("https://github.com/jueves/covid_compara/raw/main/metadata.json")
 
     data_lp %>%
         mutate(fecha=dmy(fecha)) %>%
