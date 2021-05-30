@@ -19,11 +19,11 @@ ui <- fluidPage(
                                   "Casos activos por Km²",
                                   "Casos activos por cada 100.000 hab")),
             checkboxGroupInput("locations",
-                               "Lugares",
-                               choices=c("la_palma",
-                                         "la_laguna"),
-                               selected=c("la_palma",
-                                          "la_laguna"))
+                               "municipios",
+                               choices=c("LA PALMA - ALL",
+                                         "La Laguna"),
+                               selected=c("LA PALMA - ALL",
+                                          "La Laguna"))
         )
     ),
     HTML("<a href=\"https://github.com/jueves/covid_compara\">Código del proyecto</a></li>
@@ -31,49 +31,51 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
-    base_url <- "https://docs.google.com/spreadsheets/d/1aXRIP2MnSBIIi5-kPnmawnCAXJZNiNuJy0WD4Zb0HvM/gviz/tq?tqx=out:csv&sheet="
-    data_lp <- read.csv(paste0(base_url, "la_palma"))
-    data_lgn <- read.csv(paste0(base_url, "la_laguna"))
+    data <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados.csv")
+    data$fecha_datos <- dmy(data$fecha_datos)
     metadata <- fromJSON("https://github.com/jueves/covid_compara/raw/main/metadata.json")
 
-    data_lp %>%
-        mutate(fecha=dmy(fecha)) %>%
-        mutate(lugar="la_palma") %>%
-        select(fecha, casos_activos, hospitalizados, lugar) -> data_lp
-
-    data_lgn %>%
-        mutate(fecha=dmy(fecha)) %>%
-        mutate(lugar="la_laguna") %>%
-        mutate(hospitalizados = NA) %>%
-        select(fecha, casos_activos, hospitalizados, lugar) -> data_lgn
-
-    data <- bind_rows(data_lp, data_lgn)
-
+    # Get full island data
+    data %>%
+        filter(fecha_datos > as.Date("2021/05/21")) %>% # Excludes "La Laguna" manual collected data
+        filter(!str_detect(municipio, "- ALL")) %>%
+        group_by(fecha_datos, isla) %>%
+        summarise(fecha_datos, isla,
+                  poblacion=sum(poblacion),
+                  cv19_activos=sum(cv19_activos, na.rm=TRUE),
+                  cv19_total_casos=sum(cv19_total_casos, na.rm=TRUE),
+                  cv19_fallecidos=sum(cv19_fallecidos, na.rm=TRUE),
+                  cv19_curados=sum(cv19_curados, na.rm=TRUE),
+                  municipio = paste(isla, "- ALL")) -> data_isla_ALL
+    
+    data <- bind_rows(data, data_isla_ALL)
+    
+    
     # Set colors
     my_colors <- c("#ff5454", "#428bca")
-    names(my_colors) <- c("la_laguna", "la_palma")
+    names(my_colors) <- c("La Laguna", "LA PALMA - ALL")
     
     output$distPlot <- renderPlot({
-        data <- filter(data, lugar %in% input$locations)
+        data <- filter(data, municipio %in% input$locations)
         
         if (input$unit == "Casos activos totales") {
-            ggplot(data, aes(fecha, casos_activos, color=lugar))+geom_line()+
+            ggplot(data, aes(fecha_datos, cv19_activos, color=municipio))+geom_line()+
                 labs(title="Casos activos totales")+
-                scale_color_manual(name="lugar", values=my_colors)
+                scale_color_manual(name="municipio", values=my_colors)
         } else if (input$unit == "Casos activos por Km²") {
             data %>%
-                mutate(area=sapply(lugar, function(location) metadata[[location]]$area )) %>%
-                mutate(activos_por_km2 = casos_activos/area) %>%
-                ggplot(aes(fecha, activos_por_km2, color=lugar))+geom_line()+
+                mutate(area=sapply(municipio, function(location) metadata[[location]]$area )) %>%
+                mutate(activos_por_km2 = cv19_activos/area) %>%
+                ggplot(aes(fecha_datos, activos_por_km2, color=municipio))+geom_line()+
                 labs(title="Casos activos por Km²")+
-                scale_color_manual(name="lugar", values=my_colors)
+                scale_color_manual(name="municipio", values=my_colors)
         } else if (input$unit == "Casos activos por cada 100.000 hab") {
             data %>%
-                mutate(population=sapply(lugar, function(location) metadata[[location]]$population)) %>%
-                mutate(activos_por_100000hab = casos_activos*100000/population) %>%
-                ggplot(aes(fecha, activos_por_100000hab, color=lugar))+geom_line()+
+                mutate(population=sapply(municipio, function(location) metadata[[location]]$population)) %>%
+                mutate(activos_por_100000hab = cv19_activos*100000/population) %>%
+                ggplot(aes(fecha_datos, activos_por_100000hab, color=municipio))+geom_line()+
                 labs(title="Casos activos por cada 100.000 habitantes")+
-                scale_color_manual(name="lugar", values=my_colors)
+                scale_color_manual(name="municipio", values=my_colors)
         }
     })
 }

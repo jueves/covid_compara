@@ -22,7 +22,7 @@ old_la_palma <- old_la_palma[c("fecha", "casos_activos")]
 names(old_la_palma) <- c("fecha_datos", "cv19_activos")
 old_la_palma$fecha_datos <- dmy(old_la_palma$fecha_datos)
 old_la_palma["isla"] <- "LA PALMA"
-old_la_palma["municipio"] <- "La Palma - ALL"
+old_la_palma["municipio"] <- "LA PALMA - ALL"
 old_la_palma["poblacion"] <- 82671
 old_la_palma["cv19_total_casos"] <- NA
 old_la_palma["cv19_fallecidos"] <- NA
