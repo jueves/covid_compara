@@ -42,23 +42,26 @@ estimate_actives <- funcion(data){
     municipio_list <- append(municipio_list, case_municipio)
     fecha_list <- append(fecha_list, case_dates)
   }
-  base_data <- data.frame(fecha=fecha_list, municipio=municipio_list)
-  base_data %>%
+  data.frame(fecha=fecha_list, municipio=municipio_list) %>%
     group_by(fecha, municipio) %>%
     count() -> counter_df
   
+  # Municipios metadata
+  data %>%
+    group_by(municipio, isla) %>%
+    summarise(municipio, pob=mean(poblacion), isla) %>%
+    distinct() -> municipios_metadata
+  
+  municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
+  municipios_metadata$isla <-as.character(municipios_metadata$isla)
+  
   # Add isla
   municipios_isla_dic <- as.character(unique(counter_df$municipio))
-  names(municipios_isla_dic) <- as.character(unique(counter_df$municipio))
+  names(municipios_isla_dic) <- municipios_isla_dic
   
-  municipio_isla_df <- data_asign  %>% group_by(isla, municipio) %>% count()
-  
-  municipio_isla_df$municipio <- as.character(municipio_isla_df$municipio)
-  municipio_isla_df$isla <-as.character(municipio_isla_df$isla)
-  
-  for (i in 1:nrow(municipio_isla_df)){
-    municipio <- municipio_isla_df$municipio[i]
-    isla <- municipio_isla_df$isla[i]
+  for (i in 1:nrow(municipios_metadata)){
+    municipio <- municipios_metadata$municipio[i]
+    isla <- municipios_metadata$isla[i]
     
     municipios_isla_dic[municipio] <- isla
   }
@@ -69,5 +72,27 @@ estimate_actives <- funcion(data){
   }
   
   counter_df['isla'] <- isla_list
+  
+  # Add poblacion
+  municipios_poblacion_dic <- as.character(unique(counter_df$municipio))
+  names(municipios_poblacion_dic) <- as.character(unique(counter_df$municipio))
+  
+  municipio_poblacion_df$municipio <- as.character(municipio_poblacion_df$municipio)
+  
+  
+  for (i in 1:nrow(municipios_metadata)){
+    municipio <- municipios_metadata$municipio[i]
+    poblacion <- municipios_metadata$poblacion[i]
+    
+    municipios_poblacion_dic[municipio] <- poblacion
+  }
+  
+  poblacion_list <- c()
+  for (i in 1:nrow(counter_df)){
+    poblacion_list <- append(poblacion_list, municipios_poblacion_dic[counter_df$municipio[i]])
+  }
+  
+  counter_df['poblacion'] <- poblacion_list
+  
   return(counter_df)
 }
