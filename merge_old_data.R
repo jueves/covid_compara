@@ -33,3 +33,7 @@ data <- bind_rows(old_la_laguna, old_la_palma, new_data)
 
 data$fecha_datos <- format(data$fecha_datos, "%d/%m/%Y")
 write_csv(data, "data/cv19_asignacion_agrupados_merged.csv", na="")
+
+# Transform estimated active cases
+source("estimate_active_cases.R")
+estimated_actives <- estimate_actives(read.csv("data/cv19_asignacion.csv"))
