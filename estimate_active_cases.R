@@ -50,3 +50,25 @@ base_data %>%
   group_by(fecha, municipio) %>%
   count() -> counter_df
 
+# Add isla
+municipios_isla_dic <- as.character(unique(counter_df$municipio))
+names(municipios_isla_dic) <- as.character(unique(counter_df$municipio))
+
+municipio_isla_df <- data_asign  %>% group_by(isla, municipio) %>% count()
+
+municipio_isla_df$municipio <- as.character(municipio_isla_df$municipio)
+municipio_isla_df$isla <-as.character(municipio_isla_df$isla)
+
+for (i in 1:nrow(municipio_isla_df)){
+  municipio <- municipio_isla_df$municipio[i]
+  isla <- municipio_isla_df$isla[i]
+  
+  municipios_isla_dic[municipio] <- isla
+}
+
+isla_list <- c()
+for (i in 1:nrow(counter_df)){
+  isla_list <- append(isla_list, municipios_isla_dic[counter_df$municipio[i]])
+}
+
+counter_df['isla'] <- isla_list
