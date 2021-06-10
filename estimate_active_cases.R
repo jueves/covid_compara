@@ -1,7 +1,18 @@
 library(tidyverse)
 library(lubridate)
 
-estimate_actives <- funcion(data){
+get_metadata <- function(data){
+  data %>%
+    group_by(municipio, isla) %>%
+    summarise(municipio, poblacion=mean(poblacion), isla) %>%
+    distinct() -> municipios_metadata
+  
+  municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
+  municipios_metadata$isla <-as.character(municipios_metadata$isla)
+  return(municipios_metadata)
+}
+
+estimate_actives <- function(data, metadata_source){
   data$fecha_datos <- dmy(data$fecha_datos)
   data$fecha_caso <- dmy(data$fecha_caso)
   data$fecha_fallecido <- dmy(data$fecha_fallecido)
@@ -46,53 +57,38 @@ estimate_actives <- funcion(data){
     group_by(fecha, municipio) %>%
     count() -> counter_df
   
-  # Municipios metadata
-  data %>%
+  # Add isla and poblacion for each estimation
+  metadata_source %>%
     group_by(municipio, isla) %>%
-    summarise(municipio, pob=mean(poblacion), isla) %>%
+    summarise(municipio, poblacion=mean(poblacion), isla) %>%
     distinct() -> municipios_metadata
   
   municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
   municipios_metadata$isla <-as.character(municipios_metadata$isla)
   
-  # Add isla
-  municipios_isla_dic <- as.character(unique(counter_df$municipio))
-  names(municipios_isla_dic) <- municipios_isla_dic
-  
-  for (i in 1:nrow(municipios_metadata)){
-    municipio <- municipios_metadata$municipio[i]
-    isla <- municipios_metadata$isla[i]
-    
-    municipios_isla_dic[municipio] <- isla
-  }
+  #municipios_metada <- get_metadata(metadata)
   
   isla_list <- c()
-  for (i in 1:nrow(counter_df)){
-    isla_list <- append(isla_list, municipios_isla_dic[counter_df$municipio[i]])
-  }
-  
-  counter_df['isla'] <- isla_list
-  
-  # Add poblacion
-  municipios_poblacion_dic <- as.character(unique(counter_df$municipio))
-  names(municipios_poblacion_dic) <- as.character(unique(counter_df$municipio))
-  
-  municipio_poblacion_df$municipio <- as.character(municipio_poblacion_df$municipio)
-  
-  
-  for (i in 1:nrow(municipios_metadata)){
-    municipio <- municipios_metadata$municipio[i]
-    poblacion <- municipios_metadata$poblacion[i]
-    
-    municipios_poblacion_dic[municipio] <- poblacion
-  }
-  
   poblacion_list <- c()
+  errores <- c()
   for (i in 1:nrow(counter_df)){
-    poblacion_list <- append(poblacion_list, municipios_poblacion_dic[counter_df$municipio[i]])
+    selection_vector <- municipios_metadata$municipio == counter_df$municipio[i]
+    if (as.character(counter_df$municipio[i]) == "SIN ESPECIFICAR"){
+      selected_isla <- NA
+      selected_poblacion <- NA
+    } else {
+      selected_isla <- municipios_metadata$isla[selection_vector]
+      selected_poblacion <- municipios_metadata$poblacion[selection_vector]
+    }
+    isla_list <- append(isla_list, selected_isla)
+    poblacion_list <- append(poblacion_list,selected_poblacion)
   }
-  
+  counter_df['isla'] <- isla_list
   counter_df['poblacion'] <- poblacion_list
   
+  # Add missing columns
+  counter_df %>%
+    mutate(cv19_total_casos=NA, cv19_fallecidos=NA, cv19_curados=NA) %>%
+    rename(cv19_activos=n, fecha_datos=fecha) -> counter_df
   return(counter_df)
 }

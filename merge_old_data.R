@@ -1,11 +1,13 @@
 library(tidyverse)
 library(lubridate)
 
-new_data <- read.csv("data/cv19_asignacion_agrupados.csv")
+# Load datasets
+data_grouped <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados.csv")
+data_ungrouped <- read.csv("https://opendata.sitcan.es/upload/sanidad/cv19_municipio-asignacion_casos.csv")
 old_la_palma <- read.csv("data/prueba_la_palma - la_palma.csv")
 old_la_laguna <- read.csv("data/prueba_la_palma - la_laguna.csv")
 
-new_data$fecha_datos <- dmy(new_data$fecha_datos)
+data_grouped$fecha_datos <- dmy(data_grouped$fecha_datos)
 
 # Transform La Laguna data
 names(old_la_laguna) <- c("fecha_datos", "cv19_activos")
@@ -29,11 +31,23 @@ old_la_palma["cv19_fallecidos"] <- NA
 old_la_palma["cv19_curados"] <- NA
 
 
-data <- bind_rows(old_la_laguna, old_la_palma, new_data)
+#data <- bind_rows(old_la_laguna, old_la_palma, data_grouped)
 
-data$fecha_datos <- format(data$fecha_datos, "%d/%m/%Y")
-write_csv(data, "data/cv19_asignacion_agrupados_merged.csv", na="")
 
 # Transform estimated active cases
 source("estimate_active_cases.R")
-estimated_actives <- estimate_actives(read.csv("data/cv19_asignacion.csv"))
+estimated_actives <- estimate_actives(data=data_ungrouped, metadata_source=data_grouped)
+
+# Actual estimation doesnt get correct values for the first month
+estimated_actives %>% filter(fecha_datos>dmy("1/2/2021"))
+
+# data <- bind_rows(old_la_laguna, old_la_palma, estimated_actives, data_grouped)
+
+
+bind_rows(old_la_laguna, old_la_palma, estimated_actives, data_grouped) %>%
+  distinct() %>% # data_grouped may already have entries from the other dataframes
+  mutate(fecha_datos=format(fecha_datos, "%d/%m/%Y")) %>%
+  write_csv("data/cv19_asignacion_agrupados_merged.csv", na="")
+
+# data$fecha_datos <- format(data$fecha_datos, "%d/%m/%Y")
+# write_csv(data, "data/cv19_asignacion_agrupados_merged.csv", na="")
