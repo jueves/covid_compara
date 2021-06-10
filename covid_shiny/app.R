@@ -28,11 +28,13 @@ ui <- fluidPage(
                 )
             )
     ),
-    HTML("<a href=\"https://github.com/jueves/covid_compara\">Código del proyecto</a></li>
-          <br>
-          <br>Fuentes:
-          <br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a>
-          <br><a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a>")
+    # HTML("<a href=\"https://github.com/jueves/covid_compara\">Código del proyecto</a></li>
+    #       <br>
+    #       <br>Fuentes:
+    #       <br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a>
+    #       <br><a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a>")
+    HTML("<p>Evolución del número absoluto de casos activos de SARS-CoV-2 . <a href=\"https://github.com/jueves/covid_compara\">Más información.</a></p>
+<p>Fuentes:<br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a><br><a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a></p>")
 )
 
 server <- function(input, output, session) {
