@@ -3,6 +3,7 @@ covid_canarias.Rproj
 .Rhistory
 .Rproj.user
 *.ods
+.RData
 *.png
 *.pdf
 Descartado
