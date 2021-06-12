@@ -27,24 +27,22 @@ ui <- fluidPage(
                 )
             )
     ),
-    # HTML("<a href=\"https://github.com/jueves/covid_compara\">Código del proyecto</a></li>
-    #       <br>
-    #       <br>Fuentes:
-    #       <br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a>
-    #       <br><a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a>")
-    HTML("<p>Evolución del número absoluto de casos activos de SARS-CoV-2.</p> <p>Este proyecto se encuentra en desarrollo y los resultados mostrados pueden ser incorrectos. <a href=\"https://github.com/jueves/covid_compara\">Más información.</a></p>
-<p>Fuentes:<br><a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a><br><a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a></p>")
+
+    HTML("<p>Evolución del número absoluto de casos activos de SARS-CoV-2.</p>
+    <p>Este proyecto se encuentra en desarrollo y los resultados mostrados pueden ser incorrectos.
+    <a href=\"https://github.com/jueves/covid_compara\">Más información.</a></p>
+<p>Fuentes:<br>
+         <a href=\"https://grafcan1.maps.arcgis.com/apps/opsdashboard/index.html#/156eddd4d6fa4ff1987468d1fd70efb6\">Grafcan</a><br>
+         <a href=\"https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19\">Canarias Datos Abiertos</a></p>")
 )
 
 server <- function(input, output, session) {
-    data <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados.csv")
-    #data <- read.csv("cv19_asignacion_agrupados_merged.csv")
-    metadata <- fromJSON("https://github.com/jueves/covid_compara/raw/main/metadata.json")
-
+    data <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados_collected.csv")
+    
     # Get full island data
     data$fecha_datos <- dmy(data$fecha_datos)
     data %>%
-        filter(fecha_datos > as.Date("2021/05/21")) %>% # Excludes "La Laguna" manual collected data
+        #filter(fecha_datos > as.Date("2021/05/21")) %>% # Excludes "La Laguna" manual collected data
         filter(!str_detect(municipio, "- ALL")) %>%
         group_by(fecha_datos, isla) %>%
         summarise(fecha_datos, isla,
