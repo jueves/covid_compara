@@ -19,18 +19,6 @@ data$fecha_caso <- dmy(data$fecha_caso)
 data$fecha_fallecido <- dmy(data$fecha_fallecido)
 data$fecha_curado <- dmy(data$fecha_curado)
 
-# Create base date-municipio dataframe
-# number_of_days = 150
-# days_template <- seq(as.Date("2021/01/01"), by = "day", length.out = number_of_days)
-# days_list <- c()
-# municipios_list <- c()
-# for (municipio in unique(data$municipio)){
-#   days_list <- append(days_list, days_template)
-#   municipios_list <- append(municipios_list, rep(municipio, number_of_days))
-# }
-# 
-# counter_df <- data.frame(fecha=days_list, municipio=municipios_list)
-
 # Create a single end date for each case
 end_date <- c()
 for (i in 1:nrow(data)){
