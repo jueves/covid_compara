@@ -1,16 +1,17 @@
 library(tidyverse)
 library(lubridate)
 
-get_metadata <- function(data){
-  data %>%
-    group_by(municipio, isla) %>%
-    summarise(municipio, poblacion=mean(poblacion), isla) %>%
-    distinct() -> municipios_metadata
-  
-  municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
-  municipios_metadata$isla <-as.character(municipios_metadata$isla)
-  return(municipios_metadata)
-}
+# Define functions
+# get_metadata <- function(data){
+#   data %>%
+#     group_by(municipio, isla) %>%
+#     summarise(municipio, poblacion=mean(poblacion), isla) %>%
+#     distinct() -> municipios_metadata
+#   
+#   municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
+#   municipios_metadata$isla <-as.character(municipios_metadata$isla)
+#   return(municipios_metadata)
+# }
 
 estimate_actives <- function(data, metadata_source){
   data$fecha_datos <- dmy(data$fecha_datos)
@@ -61,16 +62,12 @@ estimate_actives <- function(data, metadata_source){
   metadata_source %>%
     group_by(municipio, isla) %>%
     summarise(municipio, poblacion=mean(poblacion), isla) %>%
-    distinct() -> municipios_metadata
-  
-  municipios_metadata$municipio <- as.character(municipios_metadata$municipio)
-  municipios_metadata$isla <-as.character(municipios_metadata$isla)
-  
-  #municipios_metada <- get_metadata(metadata)
+    distinct() %>%
+    mutate(municipio=as.character(municipio),
+           isla=as.character(isla))-> municipios_metadata
   
   isla_list <- c()
   poblacion_list <- c()
-  errores <- c()
   for (i in 1:nrow(counter_df)){
     selection_vector <- municipios_metadata$municipio == counter_df$municipio[i]
     if (as.character(counter_df$municipio[i]) == "SIN ESPECIFICAR"){
@@ -92,3 +89,16 @@ estimate_actives <- function(data, metadata_source){
     rename(cv19_activos=n, fecha_datos=fecha) -> counter_df
   return(counter_df)
 }
+
+# Load data
+data_grouped <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados.csv")
+data_ungrouped <- read.csv("https://opendata.sitcan.es/upload/sanidad/cv19_municipio-asignacion_casos.csv")
+
+# Estimate actives
+estimated_actives <- estimate_actives(data_ungrouped, data_grouped)
+
+# Export data
+estimated_actives %>%
+  filter(fecha_datos>dmy("1/2/2021")) %>%
+  mutate(fecha_datos=format(fecha_datos, "%d/%m/%Y")) %>%
+  write.csv("data/cv19_asignacion_agrupados_estimated.csv", row.names = FALSE)
