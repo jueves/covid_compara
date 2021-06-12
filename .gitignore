@@ -4,7 +4,6 @@ covid_canarias.Rproj
 .Rproj.user
 *.ods
 .RData
-*.png
 *.pdf
 Descartado
 covid_shiny/rsconnect
