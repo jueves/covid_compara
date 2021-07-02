@@ -1,0 +1,149 @@
+---
+title: "Discrepancia entre casos activos estimados y publicados"
+author: "Luis Cobiella Hernández"
+date: "2/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Cargar datos
+
+
+```{r load}
+data_grouped <- read.csv("https://github.com/jueves/covid_canarias_data/raw/main/data/cv19_asignacion_agrupados_collected.csv")
+data_grouped$fecha_datos <- dmy(data_grouped$fecha_datos)
+
+data_manual <- read.csv("data/cv19_asignacion_agrupados_manual.csv")
+data_manual$fecha_datos <- dmy(data_manual$fecha_datos)
+
+data_ungrouped <- read.csv("https://opendata.sitcan.es/upload/sanidad/cv19_municipio-asignacion_casos.csv")
+data_ungrouped$fecha_datos <- dmy(data_ungrouped$fecha_datos)
+```
+
+## Estimar casos
+
+```{r estimate}
+# Create dataframe with metadata
+data_grouped %>%
+  group_by(municipio, isla) %>%
+  summarise(municipio, poblacion=mean(poblacion), isla) %>%
+  distinct() %>%
+  mutate(municipio=as.character(municipio),
+         isla=as.character(isla))-> municipios_metadata
+
+# Set as date
+data_ungrouped$fecha_datos <- dmy(data_ungrouped$fecha_datos)
+data_ungrouped$fecha_caso <- dmy(data_ungrouped$fecha_caso)
+data_ungrouped$fecha_fallecido <- dmy(data_ungrouped$fecha_fallecido)
+data_ungrouped$fecha_curado <- dmy(data_ungrouped$fecha_curado)
+
+# Create a single end date for each case
+end_date <- c()
+for (i in 1:nrow(data_ungrouped)){
+  posible_dates <- as.Date(c(data_ungrouped$fecha_fallecido[i], data_ungrouped$fecha_curado[i], today()+1),
+                           origin="1970-01-01")
+  end_date <- append(end_date, min(posible_dates, na.rm=TRUE))
+}
+
+data_ungrouped['fecha_final'] <- end_date
+
+# Create date-municipio-active_cases_counter dataframe
+municipio_list <- c()
+fecha_list <- c()
+for (i in 1:nrow(data_ungrouped)){
+  num_days <- as.numeric(data_ungrouped$fecha_final[i] - data_ungrouped$fecha_caso[i])
+  if (num_days < 0){
+    num_days <- 0
+  }
+  case_dates <- seq(data_ungrouped$fecha_caso[i], by = "day", length.out = num_days)
+  case_municipio <- rep(as.character(data_ungrouped$municipio[i]), num_days)
+  
+  municipio_list <- append(municipio_list, case_municipio)
+  fecha_list <- append(fecha_list, case_dates)
+}
+data.frame(fecha=fecha_list, municipio=municipio_list) %>%
+  group_by(fecha, municipio) %>%
+  count() -> data_estimated
+
+# Add isla and poblacion for each estimation
+isla_list <- c()
+poblacion_list <- c()
+for (i in 1:nrow(data_estimated)){
+  selection_vector <- municipios_metadata$municipio == data_estimated$municipio[i]
+  if (as.character(data_estimated$municipio[i]) == "SIN ESPECIFICAR"){
+    selected_isla <- NA
+    selected_poblacion <- NA
+  } else {
+    selected_isla <- municipios_metadata$isla[selection_vector]
+    selected_poblacion <- municipios_metadata$poblacion[selection_vector]
+  }
+  isla_list <- append(isla_list, selected_isla)
+  poblacion_list <- append(poblacion_list,selected_poblacion)
+}
+data_estimated['isla'] <- isla_list
+data_estimated['poblacion'] <- poblacion_list
+
+# Add missing columns
+data_estimated %>%
+  mutate(cv19_total_casos=NA, cv19_fallecidos=NA, cv19_curados=NA) %>%
+  rename(cv19_activos=n, fecha_datos=fecha) %>%
+  filter(fecha_datos>dmy("1/2/2021")) -> data_estimated
+```
+
+
+```{r merge}
+data_all <- bind_rows(list(downloaded=data_grouped, estimated=data_estimated,
+                           manual=data_manual), .id="data_origin")
+```
+
+
+Comprobamos ahora que no existen datos duplicados para cada combinación de fecha, municipio y origen de los datos.
+```{r check_duplicates}
+# Check for duplicated data
+data_all %>%
+  group_by(fecha_datos, municipio, data_origin) %>%
+  count() %>%
+  filter(n>1)
+```
+
+```{r isla-ALL}
+data_all %>%
+        filter(!str_detect(municipio, "- ALL")) %>%
+        filter(data_origin!="manual") %>%
+        group_by(fecha_datos, isla, data_origin) %>%
+        summarise(fecha_datos, isla, data_origin,
+                  poblacion=sum(poblacion),
+                  cv19_activos=sum(cv19_activos, na.rm=TRUE),
+                  cv19_total_casos=sum(cv19_total_casos, na.rm=TRUE),
+                  cv19_fallecidos=sum(cv19_fallecidos, na.rm=TRUE),
+                  cv19_curados=sum(cv19_curados, na.rm=TRUE),
+                  municipio = paste(isla, "- ALL")) -> data_isla_ALL
+    
+data_all <- bind_rows(data_all, data_isla_ALL)
+    
+data_all$isla <- factor(data_all$isla)
+data_all$municipio <- factor(data_all$municipio)
+```
+
+
+```{r plot_function}
+plot_municipio <- function(municipio_name){
+  data_all %>%
+  filter(as.character(municipio)==municipio_name) %>%
+  ggplot(aes(fecha_datos, cv19_activos, color=data_origin))+geom_line()+
+        labs(title=paste("Casos activos en", municipio_name))
+}
+```
+
+
+```{r la_laguna, echo=FALSE}
+plot_municipio("La Laguna")
+plot_municipio("Santa Cruz de Tenerife")
+plot_municipio("Las Palmas de Gran Canaria")
+plot_municipio("LA PALMA - ALL")
+plot_municipio("TENERIFE - ALL")
+```
+
