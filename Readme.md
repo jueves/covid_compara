@@ -12,16 +12,15 @@ Daily active cases in the original dataset from Canarias Datos Abiertos doesn't 
 ## Estimated daily active cases
 A history of old daily active cases has been estimated from [individual cases](https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19/resource/3b5b2d84-fe9d-42eb-91eb-54f0cb3cb4cc) in order to get full data, at least from February 2021 onwards.
 
-**This data remains incongruent with values from the daily active cases dataset.**
+This data has a mismatch with values from the daily active cases dataset for data before june 2021.
 
 ![](incongruence.png)
 
 We can see the mismatch between the three datasets, in this case about "La Laguna" location.  
 On blue there is data manually collected from the Grafcan dashboard. On red data about total active cases per municipio, downloaded from Canarias Datos Abiertos. The green line is the same measure, but in this case obtained from the non-agregated cases dataset from Canarias Datos Abiertos.
 
-There may be a bug in the code (probably on `estimate_active_cases.R`) or a misunderstanding about the measure. Maybe even a mistake on the original data.
+This topic is covered in more depth in [this document](https://github.com/jueves/covid_compara/blob/main/mismatch.md)
 
 ## To do
-* Solve incongruence between estimated active cases and reported active cases.
 * Integrate values before May 23rd 2021.
 * Add option to plot averages of the last 7 days.
