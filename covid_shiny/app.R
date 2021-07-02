@@ -42,7 +42,6 @@ server <- function(input, output, session) {
     # Get full island data
     data$fecha_datos <- dmy(data$fecha_datos)
     data %>%
-        #filter(fecha_datos > as.Date("2021/05/21")) %>% # Excludes "La Laguna" manual collected data
         filter(!str_detect(municipio, "- ALL")) %>%
         group_by(fecha_datos, isla) %>%
         summarise(fecha_datos, isla,
