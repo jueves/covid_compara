@@ -29,6 +29,11 @@ for (i in 1:nrow(data_ungrouped)){
 
 data_ungrouped['fecha_final'] <- end_date
 
+# Calculate illness duration probabilities
+duration_vector <- data_ungrouped$fecha_final - data_ungrouped$fecha_caso
+prob_over30 <- sum(duration_vector>30)/length(duration_vector)
+paste("Probability of illness longer than 30 days:", round(prob_over30, 3))
+
 # Create date-municipio-active_cases_counter dataframe
 municipio_list <- c()
 fecha_list <- c()

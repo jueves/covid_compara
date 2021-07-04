@@ -4,12 +4,12 @@ Discrepancia entre casos activos estimados y publicados
 Se han obtenido los casos activos de COVID-19 por día y municipio a
 partir de datos desagregados publicados por [Canarias Datos
 Abiertos](https://datos.canarias.es/catalogos/general/dataset/datos-epidemiologicos-covid-19).
-Sin embargo para algunos municipios estos no coinciden con los datos
-agregados proporcionados por la misma fuente.
+Sin embargo para algunos municipios hay periodos en que estos no
+coinciden con los datos agregados proporcionados por la misma fuente.
 
 A continuación se desarrolla el procesado de los datos para obtener los
-datos agregados a partir de los desagregados y se muestra la comparación
-entre ambos conjuntos en distintos gráficos.
+valores agregados a partir de los desagregados y se visualiza la
+comparación entre las distintas fuentes.
 
 ## Carga de datos
 
@@ -33,13 +33,6 @@ El conjunto de datos desagregados consiste en una fila por paciente que
 incluye entre otros atributos municipio al que ha sido asignado el caso,
 fecha de detección del caso, fecha de recuperación y fecha de
 fallecimiento.
-
-Ya que estos datos desagregados solo están disponibles a partir del
-1/1/2021, no se incluyen los casos iniciados antes de esta fecha aunque
-algunos continuen activos al terminar el año 2020. A fin de solventar
-este problema, y dado que la COVID-19 se resuelve casi siempre en un
-plazo inferior a un mes, de los datos agregados generados se excluye el
-mes de enero.
 
 ``` r
 # Create dataframe with metadata
@@ -66,6 +59,15 @@ for (i in 1:nrow(data_ungrouped)){
 
 data_ungrouped['fecha_final'] <- end_date
 
+# Calculate illness duration probabilities
+duration_vector <- data_ungrouped$fecha_final - data_ungrouped$fecha_caso
+prob_over30 <- sum(duration_vector>30)/length(duration_vector)
+paste("Probability of illness longer than 30 days:", round(prob_over30, 3))
+```
+
+    ## [1] "Probability of illness longer than 30 days: 0.024"
+
+``` r
 # Create date-municipio-active_cases_counter dataframe
 municipio_list <- c()
 fecha_list <- c()
@@ -108,6 +110,16 @@ data_estimated %>%
   rename(cv19_activos=n, fecha_datos=fecha) %>%
   filter(fecha_datos>dmy("1/2/2021")) -> data_estimated
 ```
+
+Ya que estos datos desagregados solo están disponibles a partir del
+1/1/2021, no se incluyen los casos iniciados antes de esta fecha aunque
+algunos continuen activos al terminar el año 2020. A fin de solventar
+este problema, y dado que la COVID-19 se resuelve casi siempre en un
+plazo inferior a un mes\*, de los datos agregados generados se excluye
+el mes de enero.
+
+\**Para nuestra muestra el número de casos con duración superior a 30
+días es inferior al 3%*
 
 ## Fusión de los datos
 
