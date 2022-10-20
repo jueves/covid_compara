@@ -21,7 +21,3 @@ We can see the mismatch between the three datasets, which refer to the same even
 On blue there is data manually collected from the Grafcan dashboard. On red data automatically downloaded from Canarias Datos Abiertos. The green line is the same measure, but in this case the aggregated municipality values are not directly obtained, but calculated from the non-aggregated cases dataset from Canarias Datos Abiertos.
 
 This topic is covered in more depth in [this document](https://github.com/jueves/covid_compara/blob/main/mismatch.md).
-
-## To do
-* Integrate values before May 23rd 2021.
-* Add option to plot averages of the last 7 days.
