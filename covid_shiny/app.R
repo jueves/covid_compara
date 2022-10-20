@@ -14,9 +14,9 @@ ui <- fluidPage(
         sidebarPanel(
             selectInput("unit",
                         "Unidad de medida",
-                        choices=c("Casos activos totales",
-                                  #"Casos activos por Km²"),
-                                 "Casos activos por cada 100.000 hab")
+                        choices=c(#"Casos activos por Km²"),
+                                 "Casos activos por cada 100.000 hab",
+                                 "Casos activos totales")
                         ),
             selectizeInput(
                 inputId = "locations",
