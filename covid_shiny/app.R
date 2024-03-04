@@ -78,7 +78,8 @@ server <- function(input, output, session) {
         
         if (input$unit == "Casos activos totales") {
             ggplot(data, aes(fecha_datos, cv19_activos, color=municipio))+geom_line()+
-                labs(title="Casos activos totales")#+
+                labs(title="Casos activos totales")+
+                scale_x_date(date_labels = "%m-%Y")#+
                 #scale_color_manual(name="municipio", values=my_colors)
         } else if (input$unit == "Casos activos por Km²") {
             data %>%
@@ -86,13 +87,15 @@ server <- function(input, output, session) {
                 mutate(activos_por_km2 = cv19_activos/area) %>%
                 ggplot(aes(fecha_datos, activos_por_km2, color=municipio))+geom_line()+
                 labs(title="Casos activos por Km²")+
-                scale_color_manual(name="municipio", values=my_colors)
+                scale_color_manual(name="municipio", values=my_colors)+
+                scale_x_date(date_labels = "%m-%Y")
         } else if (input$unit == "Casos activos por cada 100.000 hab") {
             data %>%
                 #mutate(population=sapply(municipio, function(location) metadata[[location]]$population)) %>%
                 mutate(activos_por_100000hab = cv19_activos*100000/poblacion) %>%
                 ggplot(aes(fecha_datos, activos_por_100000hab, color=municipio))+geom_line()+
-                labs(title="Casos activos por cada 100.000 habitantes")#+
+                labs(title="Casos activos por cada 100.000 habitantes")+
+                scale_x_date(date_labels = "%m-%Y")#+
                 #scale_color_manual(name="municipio", values=my_colors)
         }
     })
