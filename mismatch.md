@@ -217,11 +217,12 @@ fuentes de datos y que a partir de mediados de junio todos ellos
 convergen, parece razonable descartar un error en nuestro cálculo de
 valores agregados.
 
-Queda sin embargo sin aclarar el origen de esta diferencia entre las
+Cabría pensar que la asignación de municipio a algunos casos fuera erronea,
+aumentando por ejemplo los casos de aquellos municipios con mayores
+servicios de urgencias, pero no encontramos municipios en los que
+la discordancia se de a la inversa (mayor número de casos descargados
+que de casos estimados). Además, los datos de Tenerife en su conjunto
+tampoco concuerdan entre ambas fuentes.
+
+Queda por tanto sin aclarar el origen de esta diferencia entre las
 distintas fuentes.
-
-## Trabajo futuro
-
-Podría ser interesante calcular la diferencia entre las distintas
-fuentes de datos de forma cuantitativa, por ejemplo a través de la suma
-de errores cuadrados.
